@@ -3,10 +3,13 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const User = require('./models/User');
+const QuizResult = require('./models/QuizResult'); // Adjust the path as necessary
+
 const axios = require('axios');
 const submitRoute = require('./routes/submit');
 const scoreRoutes = require('./routes/results');
-
+const saveResultRoute = require('./routes/save_result'); // Adjust the path as necessary
+const util = require('util');
 
 dotenv.config();
 
@@ -19,8 +22,8 @@ app.use(express.json()); // for parsing application/json
 
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("Connected to MongoDB"))
-.catch(err => console.error("MongoDB connection error:", err));
+.then(() => console.log("✅ Connected to MongoDB"))
+.catch(err => console.error("❌ MongoDB connection error:", err));
 
 
 
@@ -29,7 +32,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.post("/api/signup", async (req, res) => {
   const { name, email, password, course } = req.body;
 
-  console.log("Received signup request:", req.body); // debug log
+  console.log("Received signup request:", req.body); // ✅ Debug log
 
   try {
     const existingUser = await User.findOne({ email });
@@ -48,7 +51,7 @@ app.post("/api/signup", async (req, res) => {
     console.log("User created successfully:", newUser);
     res.json({ success: true , newUser});
   } catch (err) {
-    console.error("Signup error:", err); // Critical error log
+    console.error("Signup error:", err); // ✅ Critical error log
     res.json({ success: false });
   }
 });
@@ -160,6 +163,9 @@ app.get('/api/ask-ai', async (req, res) => {
   }
 });
 
+
+
+
 // api for store and retrive score 
 
 
@@ -168,6 +174,7 @@ app.get('/api/ask-ai', async (req, res) => {
 
 // for login
 app.post("/login", async (req, res) => {
+  console.log("Login request received:"); // Debug log
     const { identifier, password } = req.body;
     try {
       const user = await User.findOne({
@@ -184,11 +191,10 @@ app.post("/login", async (req, res) => {
       res.json({ success: false });
     }
   });
-
   
   // Optional: Serve dashboard
   app.get("/dashboard.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../quiz_app_frontend/dashboard.html")); // Create this later
+    res.sendFile(path.join(__dirname, "../client/dashboard.html")); // Create this later
   });
 
 
@@ -199,21 +205,29 @@ app.use(submitRoute);
 // SCORES
 app.use(scoreRoutes);
 
+// Save Quiz Responses
+app.use(saveResultRoute); // Adjust the path as necessary
 
 
 
-
-// Hello World Route
-app.get('/', (req, res) => {
-    res.send('Hello World');
-  });
+//======================================================  
+const QuizResponse = require('./models/QuizResponse'); // Adjust the path as necessary
 
 
+// leaderboard route
+const leaderboardRoute = require('./routes/leaderboard'); // Adjust the path as necessary
+app.use(leaderboardRoute); // Use the leaderboard route
 
 
+//======================================================
+app.get('/', async (req, res) => {  
+
+  res.send({"message": "Welcome to the Quiz API!"});
+
+})
 
 //-----------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

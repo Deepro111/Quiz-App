@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Score = require('../models/Score');
+const Score = require('../models/Score'); // Adjust path if needed
 
 // GET scores by userId
 router.get('/api/scores', async (req, res) => {
